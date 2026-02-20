@@ -1,5 +1,6 @@
 <?php
 session_start();
+require_once __DIR__ . '/vendor/autoload.php';
 
 function isLoggedIn(): bool {
     return isset($_SESSION['user_id']);

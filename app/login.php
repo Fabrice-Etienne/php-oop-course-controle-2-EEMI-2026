@@ -1,6 +1,7 @@
 <?php
 session_start();
 
+require_once __DIR__ . '/vendor/autoload.php';
 // Importation de la classe Database
 require_once __DIR__ . '/src/Database.php';
 
@@ -8,16 +9,14 @@ function isLoggedIn(): bool {
     return isset($_SESSION['user_id']);
 }
 
-// Supprimé : getDbConnexion() n'est plus nécessaire ici car on utilise la classe Database
 
 function login(string $email, string $password) {
     $sql = "SELECT * FROM users WHERE email = :email";
     
-    // Utilisation de la nouvelle classe Database
     $stmt = Database::getInstance()->prepare($sql);
     
     $stmt->execute(['email' => $email]);
-    $user = $stmt->fetch(); // Le mode FETCH_ASSOC est déjà géré dans la classe Database
+    $user = $stmt->fetch(); 
 
     if (!$user || !password_verify($password, $user['password'])) {
         return false;
