@@ -33,4 +33,20 @@ class Comment {
         return $comments;
     }
 
+        public static function create(int $postId, int $userId, string $content): self {
+        $stmt = Database::getInstance()->prepare(
+            "INSERT INTO comments (content, post_id, user_id) VALUES (:content, :post_id, :user_id)"
+        );
+        $stmt->execute([
+            'content' => $content,
+            'post_id' => $postId,
+            'user_id' => $userId
+        ]);
+        $id = Database::getInstance()->lastInsertId();
+        $stmt = Database::getInstance()->prepare("SELECT * FROM comments WHERE id = :id");
+        $stmt->execute(['id' => $id]);
+        return new self($stmt->fetch());
+    }
+
+
 }
