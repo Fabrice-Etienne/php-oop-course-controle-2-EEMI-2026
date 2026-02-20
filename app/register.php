@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="flex flex-row w-full h-24 bg-gray-900 items-center justify-center">
                 <div class="w-11/12 flex flex-row items-center justify-end space-x-4">
                     <a href="/" class="text-white">Homepage</a>
-                    <?php if (isLoggedIn()): ?>
+                    <?php if (User::isLoggedIn()): ?>
                         <a href="/blogs/new.php" class="text-white">Create post</a>
                         <a href="/profile.php" class="text-white">Profile</a>
                         <a href="/logout.php" class="text-white">Logout</a>
@@ -47,8 +47,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="flex flex-col w-11/12 items-center justify-start">
                 <h1 class="text-4xl">Wonderful blog</h1>
                 <form action="/register.php" method="post" class="flex flex-col w-1/2 space-y-4">
-                    <?php if ($success === false): ?>
-                        <p class="text-red-500">Invalid credentials</p>
+                    <?php if (isset($error)): ?>
+                        <p class="text-red-500 font-semibold"><?= htmlspecialchars($error) ?></p>
                     <?php endif; ?>
 
                     <input type="text" name="username" placeholder="Username" class="p-2 border border-gray-300 rounded">
