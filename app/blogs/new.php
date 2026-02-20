@@ -38,7 +38,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="flex flex-row w-full h-24 bg-gray-900 items-center justify-center">
                 <div class="w-11/12 flex flex-row items-center justify-end space-x-4">
                     <a href="/" class="text-white">Homepage</a>
-                    <?php if (isLoggedIn()): ?>
+                    <?php if (User::isLoggedIn()): ?>
                         <a href="/blogs/new.php" class="text-white">Create post</a>
                         <a href="/profile.php" class="text-white">Profile</a>
                         <a href="/logout.php" class="text-white">Logout</a>
