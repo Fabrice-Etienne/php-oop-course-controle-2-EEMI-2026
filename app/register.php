@@ -1,52 +1,24 @@
 <?php
 session_start();
-
 require_once __DIR__ . '/vendor/autoload.php';
 
-function isLoggedIn(): bool {
-    return isset($_SESSION['user_id']);
-}
-function getDbConnexion(): PDO {
-    $host = 'php-oop-exercice-db';
-    $db = 'blog';
-    $user = 'root';
-    $password = 'password';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $username = $_POST['username'] ?? null;
+    $email = $_POST['email'] ?? null;
+    $password = $_POST['password'] ?? null;
 
-    $dsn = "mysql:host=$host;dbname=$db;charset=UTF8";
-
-    return new PDO($dsn, $user, $password);
-}
-
-function register(string $username, string $email, string $password) {
-    $sql = "SELECT * FROM users WHERE email = :email OR name = :username";
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute(['email' => $email, 'username' => $username]);
-    $user = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    if (!empty($user)) {
-        return false;
+    if ($username && $email && $password) {
+        $user = User::register($username, $email, $password);
+        if ($user) {
+            header('Location: /login.php');
+            exit;
+        } else {
+            $error = 'User already exists';
+        }
+    } else {
+        $error = 'Please fill all fields';
     }
-
-    $hashedPassword = password_hash($password, PASSWORD_DEFAULT);
-    
-    $sql = "INSERT INTO users (name, email, password) VALUES (:name, :email, :password);";
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute(['name' => $username, 'email' => $email, 'password' => $hashedPassword]);
-    
-    header('Location: /login.php');
-    exit;
 }
-
-$success = null;
-
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $username = $_POST['username'];
-    $password = $_POST['password'];
-    $email = $_POST['email'];
-
-    $success = register($username, $email, $password);
-}
-
 ?>
 
 <!doctype html>
