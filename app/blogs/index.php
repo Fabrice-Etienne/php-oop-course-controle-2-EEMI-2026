@@ -1,79 +1,31 @@
 <?php
 session_start();
+require_once __DIR__ . '/../vendor/autoload.php';
 
+// Rediriger si l'utilisateur n'est pas connecté (optionnel, selon ton besoin)
 function isLoggedIn(): bool {
     return isset($_SESSION['user_id']);
 }
 
-function getDbConnexion(): PDO {
-    $host = 'php-oop-exercice-db';
-    $db = 'blog';
-    $user = 'root';
-    $password = 'password';
-
-    $dsn = "mysql:host=$host;dbname=$db;charset=UTF8";
-
-    return new PDO($dsn, $user, $password);
+// Récupération du post
+$postId = $_GET['id'] ?? null;
+if (!$postId) {
+    header('Location: /');
+    exit;
 }
 
-function getBlogPost(): array {
-    $sql = "SELECT posts.*, users.name, users.id as user_id
-    FROM posts 
-    INNER JOIN users ON posts.user_id = users.id
-    WHERE posts.id = :id
-    ";
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute(['id' => $_GET['id']]);
-    $post = $stmt->fetch(PDO::FETCH_ASSOC);
+// Instanciation de l'objet Post
+$post = new Post((int)$postId);
+$comments = $post->getComments();
 
-    return $post;
-}
-
-function getAuthor(int $id): array {
-    $sql = "SELECT * FROM users WHERE id = :id";
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute(['id' => $id]);
-    $author = $stmt->fetch(PDO::FETCH_ASSOC);
-
-    return $author;
-}
-
-function getComments(int $postId): array {
-    $sql = "SELECT comments.*, users.name as user_name, users.id as user_id FROM comments INNER JOIN users ON comments.user_id = users.id WHERE post_id = :post_id";
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute(['post_id' => $postId]);
-    $comments = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-    return $comments;
-}
-
-$post = getBlogPost();
-$author = getAuthor($post['user_id']);
-$comments = getComments($post['id']);
-
-function postComment(string $content) {
-    if(isLoggedIn() === false) {
-        return;
+// Gestion de l'ajout d'un commentaire
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isLoggedIn()) {
+    $content = $_POST['comment'] ?? null;
+    if ($content) {
+        Comment::create($post->getId(), $_SESSION['user_id'], $content);
+        header('Location: /blogs/index.php?id=' . $post->getId());
+        exit;
     }
-
-    $post = getBlogPost();
-
-    $comment = [
-        'content' => $content,
-        'post_id' => $post['id'],
-        'user_id' => $_SESSION['user_id'],
-    ];
-
-    $sql = 'INSERT INTO comments (content, post_id, user_id) VALUES (:content, :post_id, :user_id)';
-    $stmt = getDbConnexion()->prepare($sql);
-    $stmt->execute($comment);
-    header('Location: /blogs/index.php?id=' . $post['id']);
-}
-
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $comment = $_POST['comment'];
-
-    postComment($comment);
 }
 ?>
 
