@@ -1,42 +1,28 @@
 <?php
 session_start();
+require_once __DIR__ . '/../vendor/autoload.php';
 
-function isLoggedIn(): bool {
-    return isset($_SESSION['user_id']);
+if (!User::isLoggedIn()) {
+    header('Location: /login.php');
+    exit;
 }
 
-function getDbConnexion(): PDO {
-    $host = 'php-oop-exercice-db';
-    $db = 'blog';
-    $user = 'root';
-    $password = 'password';
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
-    $dsn = "mysql:host=$host;dbname=$db;charset=UTF8";
+    $title = $_POST['title'] ?? null;
+    $content = $_POST['content'] ?? null;
 
-    return new PDO($dsn, $user, $password);
+    if ($title && $content) {
+        $post = Post::create(
+            $title,
+            $content,
+            $_SESSION['user_id']
+        );
+
+        header('Location: /blogs/index.php?id=' . $post->getId());
+        exit;
+    }
 }
-
-function createPost(string $title, string $content) {
-    $userId = $_SESSION['user_id'];
-    $pdo = getDbConnexion();
-
-    $sql = "INSERT INTO posts (title, content, user_id) VALUES (:title, :content, :user_id)";
-    $stmt = $pdo->prepare($sql);
-    $stmt->execute(['title' => $title, 'content' => $content, 'user_id' => $userId]);
-    $postId = $pdo->lastInsertId();
-
-    header('Location: /blogs/index.php?id=' . $postId);
-}
-
-
-if($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $title = $_POST['title'];
-    $content = $_POST['content'];
-    $userId = $_SESSION['user_id'];
-
-    return createPost($title, $content);
-}
-
 ?>
 
 <!doctype html>
